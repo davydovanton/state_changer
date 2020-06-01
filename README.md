@@ -41,6 +41,115 @@ Or install it yourself as:
 
 ## Usage
 
+### Base
+#### Container
+
+For using `StateChanger` library you need to create a container object which will contain state definition and transitions:
+
+```ruby
+class StateMachine < StateChanger::Container
+end
+```
+
+All container classes don't contain global state, it's mean that you can create different state machines for one data:
+
+```ruby
+class OrderStateMachine < StateChanger::Container
+end
+
+class NewOrderStateMachine < StateChanger::Container
+end
+```
+#### Defining State
+
+For defining specific state you need to use `state` method with block which should return bool value (it needs for detecting state). You can define any count of states and use any logic inside block:
+
+```ruby
+class StateMachine < StateChanger::Container
+  state(:open) { |hash| hash[:status] == :open }
+  state(:close) { |object| object.status == :open }
+  state(:inactive) { |object| object.inactive? }
+end
+```
+
+You can also use a seporate object with all states for spliting state definition:
+
+```ruby
+class States < StateChanger::StateMixin
+  state(:open) { |hash| hash[:status] == :open }
+  state(:close) { |object| object.status == :open }
+  state(:inactive) { |object| object.inactive? }
+end
+
+class StateMachine < StateChanger::Container
+  states States
+end
+```
+
+#### Transition and events
+
+For register transition in the container, you need to use `register_transition` method with the event name, targets, and block. In this block, you can do any manipulation with your data but state machine will return the value of block every time when you call it:
+
+```ruby
+class StateMachine < StateChanger::Container
+  # switch - event name for calling transition 
+  # red    - initial state for transition
+  # green  - ended state
+  register_transition(:switch, red: :green) do |data|
+    data[:light] = 'green'
+    data
+  end
+
+  # Also, you can put any objects inside block:
+  register_transition(:add_item, empty: :active) do |order, item|
+    # ...
+  end
+
+  # Or use array as a traget
+  register_transition(:add_item, [:empty, :active] => :active) do |order, item|
+    # ...
+  end
+
+  register_transition(:delete_item, active: [:empty, :active]) do |order, item_id|
+    # ...
+  end
+
+  # Also, you can use different targets for one event
+  register_transition(:switch, red: :green)    { |data| ... }
+  register_transition(:switch, green: :yellow) { |data| ... }
+  register_transition(:switch, yellow: :red)   { |data| ... }
+end
+```
+
+#### Execution
+After defining the list of states and register transitions you can create a new instance of state machine and call specific event:
+
+```ruby
+state_machine = StateMachine.new
+state_machine.call(:event_name, object)
+# => this call will return a new object with changed state
+```
+
+Also, each `StateChanger` container contain one event `get_state` which returns state of the object:
+
+```ruby
+state_machine = StateMachine.new
+state_machine.call(:get_state, object)
+# => paid
+```
+
+#### Debugging and audit events
+
+For debug prespective `StateChanger` container also sends events for each transition call. You can handle this events by adding handler logic:
+
+```ruby
+class StateMachine < StateChanger::Container
+  handle_event(:transited) do |transition_name, from, to, old_payload, new_payload|
+    logger.info('...')
+  end
+end
+```
+
 ### Traffic light example
 ```ruby
 class TrafficLightStateMachine < StateChanger::Container
