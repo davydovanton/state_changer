@@ -42,7 +42,6 @@ Or install it yourself as:
 ## Usage
 
 ### Traffic light example
-
 ```ruby
 class TrafficLightStateMachine < StateChanger::Container
   state(:red)    { |data| data[:light] == 'red' }
@@ -82,6 +81,48 @@ state_machine.call(:get_state, traffic_light)
 # => :red
 state_machine.call(:get_state, new_traffic_light)
 # => :green
+```
+
+### Order flow example
+
+```ruby
+class OrderStateMachine
+  state(:empty)  { |order| order.items.empty? && order.payment.nil? }
+  state(:active) { |order| order.items.any? && order.payment.nil? }
+  state(:paid)   { |order| order.payment }
+
+  register_transition(:add_item, [:empty, :active] => :active) do |order, item_id|
+    order.items << item
+    order
+  end
+
+  register_transition(:remove_item, active: [:empty, :active]) do |order, item_id|
+    order.remove_item(item_id)
+    order
+  end
+
+  register_transition(:pay, active: :paid) do |order|
+    order.pay
+    order
+  end
+end
+
+state_machine = OrderStateMachine.new
+
+order = Order.new(items: [])
+item = { title: 'new book' }
+
+state_machine.call(:pay, order)
+# => returns error object because empty order can't be paid
+
+active_order = state_machine.call(:add_item, order, item)
+# => order with one item in 'active' state
+
+paid_order = state_machine.call(:pay, active_order)
+# => order with paid status
+
+state_machine.call(:add_item, paid_order, item)
+# => returns error again because state invalid for transition
 ```
 
 ## Contributing
