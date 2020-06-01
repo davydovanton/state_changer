@@ -41,6 +41,49 @@ Or install it yourself as:
 
 ## Usage
 
+### Traffic light example
+
+```ruby
+class TrafficLightStateMachine < StateChanger::Container
+  state(:red)    { |data| data[:light] == 'red' }
+  state(:green)  { |data| data[:light] == 'green' }
+  state(:yellow) { |data| data[:light] == 'yellow' }
+
+  register_transition(:switch, red: :green) do |data|
+    data[:light] = 'green'
+    data
+  end
+
+  register_transition(:switch, green: :yellow) do |data|
+    data[:light] = 'yellow'
+    data
+  end
+  register_transition(:switch, yellow: :red) do |data|
+    data[:light] = 'red'
+    data
+  end
+end
+
+state_machine = TrafficLightStateMachine.new
+traffic_light = { street: 'B J. Comins, Licensed', light: 'red' }
+
+new_traffic_light = state_machine.call(:switch, traffic_light)
+# => { street: 'B J. Comins, Licensed', light: 'green' }
+
+state_machine.call(:switch, new_traffic_light)
+# => { street: 'B J. Comins, Licensed', light: 'yellow' }
+
+# `state_machine.call` is pure function, it's mean that it always returns same result for the same data
+state_machine.call(:switch, new_traffic_light)
+# => { street: 'B J. Comins, Licensed', light: 'yellow' }
+
+# Also, you can get state based on your data
+state_machine.call(:get_state, traffic_light)
+# => :red
+state_machine.call(:get_state, new_traffic_light)
+# => :green
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/davydovanton/state_changer. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/davydovanton/state_changer/blob/master/CODE_OF_CONDUCT.md).
