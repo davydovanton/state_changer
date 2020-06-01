@@ -150,6 +150,26 @@ class StateMachine < StateChanger::Container
 end
 ```
 
+### Persist state to DB
+
+It's a common practice to store state to DB in state machine call:
+
+```ruby
+job.aasm.fire!(:run) # saved
+
+```
+`StateChanger` try to use other way and separate persist and transition logic:
+
+```ruby
+# With AR
+paid_order = state_machine.call(:pay, order)
+paid_order.save
+
+# With rom or hanami-model
+paid_order = state_machine.call(:pay, order)
+repo.update(paid_order.id, paid_order)
+```
+
 ### Traffic light example
 ```ruby
 class TrafficLightStateMachine < StateChanger::Container
