@@ -1,10 +1,6 @@
-RSpec.describe StateChanger::Base do
-  class TrafficLightStateMachine < StateChanger::Base
-    state(:red)    { |data| data[:light] == 'red' }
-    state(:green)  { |data| data[:light] == 'green' }
-    state(:yellow) { |data| data[:light] == 'yellow' }
-  end
+require_relative './helpers/traffic_light'
 
+RSpec.describe StateChanger::Base do
   describe '::state' do
     it 'registers new state in specific container' do
       expect(TrafficLightStateMachine.state_container.keys).to eq ['red', 'green', 'yellow']
@@ -18,8 +14,23 @@ RSpec.describe StateChanger::Base do
     end
   end
 
-
   describe '::state_container' do
-    it { expect(StateChanger::Base.state_container).to be_a(StateChanger::Container) }
+    it { expect(TrafficLightStateMachine.state_container).to be_a(StateChanger::Container) }
+  end
+
+  describe '::transition_container' do
+    it { expect(TrafficLightStateMachine.transition_container).to be_a(StateChanger::Container) }
+  end
+
+  describe '::register_transition' do
+    it 'registers new transitions' do
+      transitions = TrafficLightStateMachine.transition_container.full_keys
+
+      expect(transitions).to eq([
+        ['switch', { from: :red, to: :green }],
+        ['switch', { from: :green, to: :yellow }],
+        ['switch', { from: :yellow, to: :red }],
+      ])
+    end
   end
 end
