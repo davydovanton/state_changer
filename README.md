@@ -42,22 +42,22 @@ Or install it yourself as:
 ## Usage
 
 ### Base
-#### Container
+#### Base
 
 For using `StateChanger` library you need to create a container object which will contain state definition and transitions:
 
 ```ruby
-class StateMachine < StateChanger::Container
+class StateMachine < StateChanger::Base
 end
 ```
 
 All container classes don't contain global state, it's mean that you can create different state machines for one data:
 
 ```ruby
-class OrderStateMachine < StateChanger::Container
+class OrderStateMachine < StateChanger::Base
 end
 
-class NewOrderStateMachine < StateChanger::Container
+class NewOrderStateMachine < StateChanger::Base
 end
 ```
 #### Defining State
@@ -65,7 +65,7 @@ end
 For defining specific state you need to use `state` method with block which should return bool value (it needs for detecting state). You can define any count of states and use any logic inside block:
 
 ```ruby
-class StateMachine < StateChanger::Container
+class StateMachine < StateChanger::Base
   state(:open) { |hash| hash[:status] == :open }
   state(:close) { |object| object.status == :open }
   state(:inactive) { |object| object.inactive? }
@@ -81,7 +81,7 @@ class States < StateChanger::StateMixin
   state(:inactive) { |object| object.inactive? }
 end
 
-class StateMachine < StateChanger::Container
+class StateMachine < StateChanger::Base
   states States
 end
 ```
@@ -91,7 +91,7 @@ end
 For register transition in the container, you need to use `register_transition` method with the event name, targets, and block. In this block, you can do any manipulation with your data but state machine will return the value of block every time when you call it:
 
 ```ruby
-class StateMachine < StateChanger::Container
+class StateMachine < StateChanger::Base
   # switch - event name for calling transition 
   # red    - initial state for transition
   # green  - ended state
@@ -143,7 +143,7 @@ state_machine.call(:get_state, object)
 For debug prespective `StateChanger` container also sends events for each transition call. You can handle this events by adding handler logic:
 
 ```ruby
-class StateMachine < StateChanger::Container
+class StateMachine < StateChanger::Base
   handle_event(:transited) do |transition_name, from, to, old_payload, new_payload|
     logger.info('...')
   end
@@ -172,7 +172,7 @@ repo.update(paid_order.id, paid_order)
 
 ### Traffic light example
 ```ruby
-class TrafficLightStateMachine < StateChanger::Container
+class TrafficLightStateMachine < StateChanger::Base
   state(:red)    { |data| data[:light] == 'red' }
   state(:green)  { |data| data[:light] == 'green' }
   state(:yellow) { |data| data[:light] == 'yellow' }
