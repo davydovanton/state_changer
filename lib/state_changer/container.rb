@@ -4,7 +4,7 @@ module StateChanger
       @container = {}
     end
 
-    def register(key, value = nil, meta: {}, &block)
+    def register(key, value = nil, meta = {}, &block)
       if value
         @container[[key.to_s, meta]] = value
       else
@@ -23,6 +23,15 @@ module StateChanger
 
     def full_keys
       @container.keys
+    end
+
+    def get_by_full_key(key)
+      @container[key]
+    end
+
+    # api private
+    def __container__
+      @container
     end
   end
 end
