@@ -67,7 +67,7 @@ For defining specific state you need to use `state` method with block which shou
 ```ruby
 class StateMachine < StateChanger::Base
   state(:open) { |hash| hash[:status] == :open }
-  state(:close) { |object| object.status == :open }
+  state(:close) { |object| object.status == :close }
   state(:inactive) { |object| object.inactive? }
 end
 ```
@@ -77,7 +77,7 @@ You can also use a seporate object with all states for spliting state definition
 ```ruby
 class States < StateChanger::StateMixin
   state(:open) { |hash| hash[:status] == :open }
-  state(:close) { |object| object.status == :open }
+  state(:close) { |object| object.status == :close }
   state(:inactive) { |object| object.inactive? }
 end
 
