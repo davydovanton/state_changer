@@ -56,4 +56,22 @@ RSpec.describe StateChanger::Base do
       expect(machine.call(:switch, data)).to eq(light: 'green')
     end
   end
+
+  describe '#transitions' do
+    let(:machine) { TrafficLightStateMachine.new }
+
+    it 'returns list of allowed transitions' do
+      data = { light: 'red' }
+
+      expect(machine.transitions(data)).to eq([
+        ['switch', { from: :red, to: :green }]
+      ])
+    end
+
+    it 'returns empty list if no allowed transitions found for current state' do
+      data = { light: 'cyan' }
+
+      expect(machine.transitions(data)).to eq([])
+    end
+  end
 end
