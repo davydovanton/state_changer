@@ -54,5 +54,17 @@ module StateChanger
 
       transition_container.get_by_full_key(transition_key).call(data.clone)
     end
+
+    def transitions(data)
+      state_container = self.class.state_container
+      transition_container = self.class.transition_container
+
+      states = state_container.keys
+        .map { |state| [state, state_container[state].call(data)] }
+        .select { |state| state.last }
+        .map(&:first)
+
+      transition_container.full_keys.select{ |i| states.include? i.last[:from].to_s }
+    end
   end
 end
