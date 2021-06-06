@@ -28,10 +28,5 @@ module StateChanger
     def get_by_full_key(key)
       @container[key]
     end
-
-    # api private
-    def __container__
-      @container
-    end
   end
 end
