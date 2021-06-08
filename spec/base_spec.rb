@@ -37,10 +37,16 @@ RSpec.describe StateChanger::Base do
   describe '#call' do
     let(:machine) { TrafficLightStateMachine.new }
 
-    it 'returns "Error" if data has invalid state' do
+    it 'raises WrongStateError if no corresponding state found' do
       data = { light: 'invalid' }
 
-      expect(machine.call(:switch, data)).to eq('Error')
+      expect { machine.call(:switch, data) }.to raise_error(StateChanger::WrongStateError)
+    end
+
+    it 'raises WrongTransitionError if no corresponding transition found' do
+      data = { light: 'red' }
+
+      expect { machine.call(:snitch, data) }.to raise_error(StateChanger::WrongTransitionError)
     end
 
     it 'returns new data mapped to next transition state' do
