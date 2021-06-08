@@ -4,6 +4,9 @@ require 'state_changer/version'
 require 'state_changer/base'
 
 module StateChanger
-  class WrongStateError < StandardError; end
-  class WrongTransitionError < StandardError; end
+  class Error < StandardError; end
+
+  class WrongStateError < Error; end
+
+  class WrongTransitionError < Error; end
 end

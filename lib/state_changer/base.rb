@@ -30,12 +30,12 @@ module StateChanger
 
     def call(event_name, data)
       states = select_states(data)
-      raise StateChanger::WrongStateError if states.empty?
+      raise_wrong_state_error!(data) if states.empty?
 
       # TODO: use condition for getting more than one initial state for data
       state = states.first
       transition_key = transition_key(event_name, state)
-      raise StateChanger::WrongTransitionError if transition_key.nil?
+      raise_wrong_transition_error!(event_name) if transition_key.nil?
 
       transition_container.get_by_full_key(transition_key).call(data.clone)
     end
@@ -52,6 +52,16 @@ module StateChanger
     private :transition_container, :state_container
 
     private
+
+    def raise_wrong_transition_error!(transition)
+      message = "transition '#{transition}' is not declared in this machine"
+      raise WrongTransitionError, message
+    end
+
+    def raise_wrong_state_error!(data)
+      message = "'#{data}' has state not declared in this machine"
+      raise WrongStateError, message
+    end
 
     def transition_key(event_name, state)
       transition_container.full_keys.detect do |t|
